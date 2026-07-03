@@ -46,6 +46,10 @@ Keep questions concise. Batch related questions together. Aim for 3-9 questions 
 
 ### Phase 3: Generation
 
+Before writing any output, review what was extracted from Figma and what the user confirmed in Phase 2. Only generate content for information you actually have. If a question went unanswered or a topic wasn't covered, omit that section rather than guessing.
+
+Then perform a coherence pass: plan how each page will describe the same concepts so no page contradicts another and no variant is described with conflicting wording across pages.
+
 Produce markdown documentation for all four pages in a single response, using the templates in `references/`. Each page should be clearly separated with a header:
 
 ```
@@ -102,14 +106,16 @@ This folder is git-ignored, so generated files won't clutter the repository.
 - **Active voice**: "Use Nudge when..." not "Nudge should be used when..."
 - **Direct**: "Don't" not "It is not recommended to"
 - **Practical**: Focus on real scenarios, not abstract principles
-- **Concise**: Bullet points over paragraphs where possible
+- **Concise**: One idea per bullet. Target 15 words or fewer per bullet. Use paragraphs only where a list would be unnatural.
+- **No em-dashes**: Never use — in output. Use commas, colons, or rewrite the sentence.
 
 ### Content Rules
 
 1. **Never include measurements** — no px, dp, pt, %, padding values, corner radii, or icon sizes
 2. **Never duplicate Figma** — if it's in Figma Inspect, it doesn't belong in Supernova
 3. **Always include examples** — abstract guidance without examples is unhelpful
-4. **Always explain "why"** — don't just say what to do, explain the reasoning
+4. **Never assume** — only document information confirmed by Figma extraction or user answers. If something is unclear or unanswered, omit it rather than filling the gap with invented reasoning.
+5. **No em-dashes in output** — rewrite any sentence that would naturally use an em-dash
 
 ## Output Format
 
