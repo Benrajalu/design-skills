@@ -25,7 +25,7 @@ When a screen reader user encounters {Component name}, they hear:
 - **Feedback**: {What does the user hear after interaction?}
 
 {If non-interactive:}
-> {Component name} is not interactive — screen reader users navigate past it as they would static text.
+> {Component name} is not interactive. Screen reader users navigate past it as they would static text.
 
 ## Keyboard navigation
 
@@ -85,7 +85,7 @@ Explain the interaction model in plain language:
 **Example (Clickable Nudge):**
 - **Focus**: Nudge receives focus in the normal tab order.
 - **Activation**: Press Enter or Space to activate (same as tapping).
-- **Feedback**: Navigates to the destination — same as any button.
+- **Feedback**: Navigates to the destination, same as any button.
 
 ### Keyboard navigation
 
@@ -111,13 +111,13 @@ Highlight decisions designers control that affect accessibility:
 4. **Touch target**: Is the interactive area large enough? (44×44pt minimum)
 
 **Example (Nudge):**
-- Don't rely on variant color alone to convey meaning — a Warning Nudge should have warning *content*, not just a warning color.
+- Don't rely on variant color alone to convey meaning: a Warning Nudge should have warning *content*, not just a warning color.
 - Clickable Nudges must have a visible focus state. Verify this is visible on your background color.
 
 ### Color and contrast
 
 **For informational components:**
-> Text must meet WCAG AA contrast (4.5:1 for body text, 3:1 for large text). The component's built-in colors are designed to pass — don't override them.
+> Text must meet WCAG AA contrast (4.5:1 for body text, 3:1 for large text). The component's built-in colors are designed to pass; don't override them.
 
 **For status/semantic components:**
 > Don't rely on color alone. Warning Nudge uses yellow, but the *content* should also indicate warning (e.g., "Only 3 left" vs. just "3 left").

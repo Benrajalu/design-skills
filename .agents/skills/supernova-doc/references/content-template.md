@@ -51,7 +51,7 @@ The Content page provides writing guidelines for the text that goes inside the c
 One sentence framing the content challenge. What makes writing for this component different?
 
 **Example (Nudge):**
-> Nudge content should be brief and attention-grabbing — think headline, not paragraph.
+> Nudge content should be brief and attention-grabbing: think headline, not paragraph.
 
 ### Tone
 
@@ -63,8 +63,8 @@ What emotional register should the text have? This varies by component:
 - **Error components** (Validation, Error state): Helpful, specific, non-blaming
 
 **Example (Nudge):**
-- Keep it punchy — Nudge competes for attention, so every word must earn its place.
-- Avoid urgency unless using the Warning variant — Default and Strong should inform, not alarm.
+- Keep it punchy: Nudge competes for attention, so every word must earn its place.
+- Avoid urgency unless using the Warning variant. Default and Strong should inform, not alarm.
 
 ### Length
 
