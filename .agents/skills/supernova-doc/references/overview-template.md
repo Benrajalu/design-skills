@@ -39,7 +39,7 @@ The bulleted list should answer these questions in order:
 
 **Example (Nudge):**
 - Use a Nudge when you need to highlight content with a lower visual weight than a PushInfo.
-- Nudge is not meant for long content — it's a bigger brother to Tags in that regard.
+- Nudge is not meant for long content: think of it as a bigger brother to Tags.
 - Nudge can accept data or a word, but that too is meant to be very short.
 - Nudge can be clickable, and used to invite users to discover something new.
 - Nudge has three variants: Default, Warning and Strong.
@@ -55,8 +55,8 @@ Keep descriptions focused on *when* to use, not *how* it looks. Visual differenc
 
 **Example (Nudge/Warning):**
 > **Warning**
-> 
-> Indicates caution — users should pay attention because something negative might happen, but with moderate urgency.
+>
+> Indicates caution: something negative might happen, but urgency is moderate.
 
 ### Quick links
 

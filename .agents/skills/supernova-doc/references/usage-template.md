@@ -59,8 +59,8 @@ For each variant, explain:
 - Generic guidance like "use for important content" without specifics
 
 **Example (Nudge/Warning):**
-- Nudge/Warning indicates caution — users should pay attention because something negative might happen, but with moderate urgency.
-- Used for scarcity indication in the Ride Details page.
+- Nudge/Warning signals caution: something negative might happen, but urgency is moderate.
+- Used for scarcity indication on the Ride Details page.
 
 ### Minimal content rules
 
