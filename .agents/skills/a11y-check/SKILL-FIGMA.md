@@ -111,12 +111,14 @@ Produce an internal list of **concerns**, each with: element, concern type, and 
 
 | Condition | Reason |
 |-----------|--------|
-| `TEXT` node | Screenreaders read text natively |
+| Plain body text, labels, captions (`TEXT` node with no heading role) | Read natively by screen readers — no annotation needed |
 | Decorative shape / background fill with no image | No semantic content |
 | Layout container (`FRAME`/`GROUP`) with no interactive role and no image fill | Pure layout |
 | Illustration or Icon confirmed as decorative | Decorative is the default; nothing actionable |
-| Component whose entire visible output is readable text (headings, body copy, labels) | Text is announced natively — check via `get_design_context` before raising |
+| Component whose entire visible output is readable text (body copy, labels) | Text is announced natively — check via `get_design_context` before raising |
 | Anything the user has explicitly said to skip | User has waived it |
+
+> **Do NOT skip section headings.** A text element that visually functions as a section heading (larger or bolder than surrounding text, or whose layer name contains "Heading", "Title", or "H1"–"H6") requires explicit heading role markup — this is not automatic. Annotate it with the `"Heading"` annotation type.
 
 ### Batching repeated concerns
 
@@ -197,9 +199,9 @@ Format:
 
 | # | Element | Annotation | Why |
 |---|---------|-----------|-----|
-| 1 | SupplySelector | Component role | Custom control — role not declared in spec |
+| 1 | SupplySelector | Component role | Custom control. Role not declared in spec. |
 | 2 | From / To inputs | Input | Labels must be programmatically associated |
-| 3 | Return date | Optional field | Skippable — not flagged in spec |
+| 3 | Return date | Optional field | Skippable, not flagged in spec |
 | 4 | Search button | Submit | Primary form action |
 
 **Not annotated (and why):**
@@ -238,22 +240,27 @@ Then follow the drawing reference below exactly:
 
 ### Side assignment
 
-Default to `right`. Fall back in order: `left` (left-half elements or crowded right), `top` (topmost elements), `bottom` (bottom nav only). Maximum 5 tooltips per side.
+Sort all annotations by `elementCenterY` (top to bottom). Assign sides by alternating: odd indices (0, 2, 4…) → `right`, even indices (1, 3, 5…) → `left`. Override to `left` unconditionally when the element's horizontal centre is in the left half of the frame (`elementCenterX < frameCenterX`). Fall back to `top` for topmost elements when both columns are full, or `bottom` for bottom-nav elements only. Maximum 5 tooltips per side.
+
+The alternating pattern distributes arrow lines across both sides, preventing arrows from crossing and preventing one side from becoming too dense.
 
 ### Tooltip content reference
+
+**No em dashes in tooltip text.** Use a period to separate two clauses, or rephrase as a single sentence. Em dashes (`—`) are not allowed in tooltip content or titles.
 
 | Annotation type | Title | Content example |
 |-----------------|-------|-----------------|
 | Alt text | `"Alt text"` | `"Illustrated trophy cup with confetti"` |
 | Combined label | `"Combined label"` | `"Score: 87 out of 100, trending up"` |
-| Touch target | `"Touch target"` | `"Below 44×44 pt — increase tap area"` |
-| State | `"State"` | `"Not communicated by colour alone — add text or shape indicator"` |
+| Touch target | `"Touch target"` | `"Below 44×44 pt minimum. Increase tap area."` |
+| State | `"State"` | `"Colour alone does not communicate state. Add a text or shape indicator."` |
 | Live region | `"Live region"` | `"Announce when value updates without navigation"` |
 | Focus order | `"Focus order"` | `"Reached before the list below"` |
 | Optional field | `"Optional field"` | `"Can be skipped by assistive technology"` |
 | Input label | `"Input"` | `"Label 'From' must be programmatically associated"` |
-| Submit button | `"Submit"` | `"Primary form action — must behave as submit"` |
-| Custom component | `"Component role"` | `"Acts as a slider — announce current value and range"` |
+| Submit button | `"Submit"` | `"Primary form action. Must behave as submit."` |
+| Custom component | `"Component role"` | `"Acts as a slider. Announce current value and range."` |
+| Heading | `"Heading"` | `"Section title. Must be marked as a heading for screen reader navigation."` |
 
 ---
 
