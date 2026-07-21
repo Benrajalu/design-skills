@@ -3,6 +3,7 @@ name: clarity-of-purpose
 description: |
    Helps define, sharpen, and audit the purpose behind a product, feature, or design decision. Use this skill whenever the request involves defining user goals, figuring out who a feature is for, turning vague requirements into a clear goal statement, deciding between design/feature options with data instead of guesses, or sanity-checking whether something being built actually serves a real user need.
 ---
+
 # Clarity of Purpose
 
 A framework for building products people love by grounding every design and product
@@ -125,6 +126,23 @@ over them:
 
 Keep the audit concise and actionable — a short list of gaps and concrete next steps,
 not a lecture on the framework.
+
+## 5. Always close with a clear summary
+
+Every response produced with this skill — regardless of which part above was used —
+must end with a short summary block the person can lift and share as-is. Use this
+exact structure:
+
+Summary
+- Who: [the specific user/segment]
+- Goal: [the solution-agnostic goal, or "not yet defined" if still unclear]
+- Motivation: [why it matters to them]
+- Sub-goal (if laddered): [one line, or omit if not applicable]
+- Open questions / data needed (if any): [bullet list, or "none — validated by data/user input"]
+- Status: [one line — e.g. "ready to build against," "needs team alignment," "needs data before deciding"]
+
+Keep the summary to 5-6 lines max. It should stand alone — someone skimming only the
+summary should understand the purpose without reading the full response above it.
 
 ## Tone
 
