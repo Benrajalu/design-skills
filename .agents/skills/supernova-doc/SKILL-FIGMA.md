@@ -4,7 +4,7 @@ description: Generate copy-paste ready Supernova documentation from a Figma comp
 compatibility: Requires Figma MCP (mcp_figma_* tools)
 ---
 
-# Supernova Documentation Agent
+# Supernova Documentation Agent on Figma
 
 ## Role
 
