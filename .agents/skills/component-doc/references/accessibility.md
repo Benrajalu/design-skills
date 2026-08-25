@@ -43,94 +43,116 @@ template.resize(column.width, template.height);
 - **Fill text only after resizing.** Setting `characters` on a text node locks its wrap width at the current rendered width. If you set text before the frame has its final width, the text will wrap at the wrong size and produce enormous node heights. Resize first, fill text second.
 - **Do not write to nodes outside the template.** All content — description, guidelines, state data — goes into the template's placeholder nodes only.
 
-After detaching and resizing, traverse the frame's full subtree to collect every text node by its placeholder content (e.g. `{Component Name}`, `{screen-reader-general-guidelines}`, `{state-title}`, etc.) and fill them directly.
+After detaching and resizing, traverse the frame's full subtree to collect nodes by name and placeholder content. The current template is state-example-first:
+
+- Summary text lives in the first `Summary + general guidance` block.
+- Each relevant state or archetype uses one `#state-template`.
+- Each `#state-template` contains one `Example of state with annotations` frame and one `#optional-description`.
+- Generic implementation details live in the lower `Technical appendix` block.
 
 ### Template structure after detaching
 
-The detached frame contains one `#state-template` per component state. Each `#state-template` has:
+The detached frame contains one reusable `#state-template`. Duplicate it for every meaningful accessibility state or state archetype you need to explain.
 
-- `(Title + optional description) + Preview` — title, description, and a Preview placeholder.
-- `Platform section` — **one** wrapper frame that holds all platform `#section` frames as children.
-
-To add platforms, **duplicate `#section`** (not `Platform section`) and append the clone inside the existing `Platform section`. The final structure must be:
+Current structure:
 
 ```
 #state-template
-├── (Title + optional description) + Preview
-└── Platform section               ← one wrapper, never duplicated
-    ├── #section  (VoiceOver iOS)
-    ├── #section  (TalkBack Android)
-    └── #section  (ARIA Web)
+└── (Title + optional description) + Preview
+    ├── #state-title
+    ├── Example of state with annotations
+    └── #optional-description
 ```
 
-**Never clone `Platform section` itself.** Cloning the outer wrapper creates sibling `Platform section` frames — each containing only one platform — which breaks the layout.
+Rules:
+- Duplicate `#state-template`, not inner child frames, when adding another state.
+- Rename the duplicate title to the state or archetype, e.g. "Empty", "Filled", "Error", "Disabled", "Trailing action".
+- Populate `Example of state with annotations` with a linked instance of the exported main component plus contextual annotations.
+- Draw those annotations with the shared `Specs-TootlipBody` tooltip and routed vector arrows from `../../../../docs/accessibility-annotation-presentation.md`.
+- Put generic or platform-specific details in `#optional-description`, not in the annotation labels.
+- Use the lower `Technical appendix` for details that apply across all examples.
 
-### Preview placeholder — component instances
+### Example of state with annotations — component instances
 
-Every `#state-template` has a `"Preview placeholder"` frame inside `(Title + optional description) + Preview`. **Always populate it** with a component instance showing the state being documented:
+Every `#state-template` has an `Example of state with annotations` frame. **Always populate it** with a viable exported component instance showing the state being documented.
+
+The top-level example instance must come from the public component in **Main component showcase**. A private primitive can be nested inside that instance, but it must not be the example root.
 
 ```js
-// 1. Get the mainComponent from any existing instance of the component in the file
-const refInstance = figma.getNodeById("<any-existing-instance-id>");
-const mainComp = refInstance.mainComponent;
+// 1. Get the exported component or variant from Main component showcase
+const mainComp = figma.getNodeById("<main-showcase-component-or-variant-id>");
+if (mainComp.type !== "COMPONENT") throw new Error("Example source must be an exported component variant");
 
 // 2. Create an instance and set its variant to match the state
 const instance = mainComp.createInstance();
-previewPlaceholder.appendChild(instance);
+exampleFrame.appendChild(instance);
 
 // For variant-based state (e.g. state=disabled):
 instance.setProperties({ state: "disabled" });
 
-// 3. Center the instance in the preview frame
-instance.x = Math.round((previewPlaceholder.width - instance.width) / 2);
-instance.y = Math.round((previewPlaceholder.height - instance.height) / 2);
+// If a state is only available on a nested primitive, keep the exported
+// component as the root and override the nested primitive inside it.
+const nestedPrimitive = instance.findOne(n => n.type === "INSTANCE" && n.name.includes("/."));
+nestedPrimitive?.setProperties({ state: "error" });
+
+// 3. Center the instance in the example frame
+instance.x = Math.round((exampleFrame.width - instance.width) / 2);
+instance.y = Math.round((exampleFrame.height - instance.height) / 2);
 ```
 
 **Rules:**
-- Always place the instance **before** adding the `#marker-example` circles so markers appear on top.
-- For Loading/Validated states, use the Loading or Validated component variant, not Primary with a property override.
-- If cloning an existing wireframe instance (not creating from mainComponent), use `.clone()` and set variant properties after placing.
+- Always create the example root from an exported main component or variant in Main component showcase; do not draw approximations.
+- Do not use primitives from Primitives, Primitives list, or Main Primitive wrapper as top-level examples.
+- Do not use private component names such as `Component/.Part` as the example root.
+- If the public component does not expose a state directly, create the public component instance first and override the nested primitive inside it.
+- Use real component properties and editable text to show the state: placeholder text, selected values, error messages, disabled state, selected/expanded/checked state, loading text, etc.
+- Prefer realistic content that makes the accessibility requirement obvious.
+- Place the component instance before annotations so annotation shapes stay visible on top.
+- For state variants (error, disabled, loading, selected, expanded), use the actual variant/property whenever available.
+- If the relevant state requires text but the component instance exposes nested text overrides, edit those text nodes after loading fonts.
 
-### Focus-order markers — `#marker-example`
+### Contextual annotations in examples
 
-The `#marker-example` frame is a numbered circle that visually annotates focus stops on a Preview, so table rows can reference them by number — e.g. "① Input field", "② Trailing icon button".
+Annotations explain the example using the same concise field model as `a11y-check`, but they are generated directly by component-doc.
 
-**Only use markers for compound components (2+ focus stops).** For single-stop components there is nothing to reference, so markers add no value and must be omitted. In that case, simply remove the original `#marker-example` without cloning it.
+Presentation must follow `../../../../docs/accessibility-annotation-presentation.md`:
+- Import `Specs-TootlipBody` with component key `5d9da1afbffd7efd927d6b59c9d969b34286594b`.
+- Set tooltip text through the component properties, not by drawing custom frames or editing arbitrary text boxes.
+- Draw connectors as routed vectors with arrowheads on the target element end. Do not use `figma.createLine()` for finished annotations.
+- Point every arrow at the exact element described by the populated fields.
+- Inside `Example of state with annotations`, set the frame to `layoutMode = "NONE"` and `clipsContent = false`, place the linked component instance first, then place tooltip instances and routed arrows.
+
+Use these fields:
+- `Output`: what should be announced when it differs from, combines, or adds to visible text.
+- `Role`: semantic role when it is important or ambiguous.
+- `State`: exposed state such as selected, expanded, checked, disabled, invalid, loading.
+- `Requirement`: behavior, relationship, or decision that is not covered by the other fields.
+
+Formatting rules:
+- Use one line per populated field.
+- Do not collapse several list-like requirements into a single paragraph.
+- Omit empty fields.
+- Keep labels short and implementation-agnostic.
+- Put platform APIs and detailed implementation notes in `#optional-description` or Technical appendix.
+
+Example annotation text:
 
 ```js
-const markerTemplate = figma.getNodeById("<marker-example-id>");
-
-// SINGLE-STOP component (e.g. Button, Checkbox): just remove the template marker
-markerTemplate.remove();
-
-// COMPOUND component (e.g. Text field with trailing icon): clone one marker per stop
-async function addMarker(previewFrame, targetElement, stepNumber) {
-  const marker = markerTemplate.clone();
-  previewFrame.appendChild(marker);
-
-  // Set the step number
-  const textNode = marker.findAll(n => n.type === "TEXT")[0]; // use findAll (recursive)
-  await figma.loadFontAsync(textNode.fontName);
-  textNode.characters = String(stepNumber);
-
-  // Position at the top-left corner of the element being annotated
-  marker.x = targetElement.x - Math.round(marker.width / 2);
-  marker.y = targetElement.y - Math.round(marker.height / 2);
-}
-
-// Example: Text field with input (stop 1) and trailing icon button (stop 2)
-await addMarker(preview, inputElement, 1);
-await addMarker(preview, trailingIconElement, 2);
-
-// Remove the original after all clones are placed
-markerTemplate.remove();
+Output: Email. Current value: user@example.com
+Role: Select field
+State: Invalid
+Requirement: Error text is announced with the field.
 ```
 
-**Rules:**
-- Use `findAll` (recursive), not `findChild`, to locate the text node inside the marker.
-- Number markers starting from `1` in traversal order.
-- The table row for each stop must reference its marker number — otherwise the markers serve no purpose and should be removed.
-- Always remove the original `#marker-example` — whether or not you cloned it — so it never remains as an orphan in the template.
+Annotation placement rules:
+- Point annotations at the exact part of the state example they describe.
+- Every visual annotation must use the shared tooltip component. Do not draw custom magenta boxes or manual text callouts.
+- Every connector must be a routed vector arrow using the shared helper. Do not use plain `LineNode` connectors.
+- If one state has multiple important requirements, add multiple annotations rather than one dense block.
+- For single-stop components, annotate the component surface.
+- For compound components, annotate each independent focus stop when the difference matters.
+- Decorative icons and passive slots should not get annotations unless their treatment is ambiguous.
+- If no visual annotation is needed for a generic rule, write it in `#optional-description`.
 
 ### Sizing after layout changes
 
@@ -142,11 +164,28 @@ If you need to rearrange layout (e.g. switching `#state-template` from HORIZONTA
 
 You are an accessibility expert generating screen reader specifications for VoiceOver (iOS), TalkBack (Android), and ARIA (Web).
 
+## Design principle: layered output for mixed audiences
+
+The audience overlaps with `a11y-check`: designers, PMs, and engineers who need to decide what matters first, then inspect technical depth only when needed.
+
+Use a two-layer output in the Accessibility section:
+
+1. **Designer summary (primary)**: concise and decision-focused. This is the section most people read.
+2. **Technical appendix (secondary)**: full platform detail for implementation and QA.
+
+Do not mix these layers. Keep the summary lightweight and the appendix exhaustive.
+
 ## Task
 
 **Before starting, read:** `voiceover.md`, `talkback.md`, `aria.md`.
 
-Analyze a UI component from a Figma link, image, or description. Render the screen reader specification directly in Figma using MCP tools — focus order, component anatomy, and platform-specific accessibility properties organized by state. Do NOT output JSON to the user; all data flows directly into Figma template placeholders referenced at the top of this file.
+Analyze a UI component from a Figma link, image, or description. Render accessibility documentation directly in Figma using MCP tools.
+
+First produce a concise designer summary, then add the technical appendix with focus order, component anatomy, and platform-specific properties organized by state.
+
+Do NOT output JSON to the user; all data flows directly into Figma template placeholders referenced at the top of this file.
+
+See `../../../../docs/accessibility-annotation-guide.md` for shared concise language and field taxonomy used across skills.
 
 ## Inputs
 
@@ -171,6 +210,92 @@ User-provided: component type, states to document, context.
 | Description incomplete | Infer from image/Figma; note in `guidelines` |
 | Image contradicts description | Description wins |
 | Figma link provided | Use MCP tools to supplement visual analysis |
+
+---
+
+## Output contract: summary, annotated states, appendix
+
+### 1) Designer summary (required, primary)
+
+Write this first and keep it short, plain-language, and actionable.
+
+Include only:
+- **Component accessibility intent** (1-2 sentences)
+- **Focus model summary** (single stop vs multi-stop, traversal gist)
+- **State coverage summary** (which states require explicit announcement)
+- **Open decisions** (if any unresolved behavior needs product/design confirmation)
+
+Use concise field wording aligned with `a11y-check` where relevant:
+- `Output`
+- `Role`
+- `State`
+- `Requirement`
+
+Rules:
+- Avoid platform API names in the summary.
+- Avoid long property lists.
+- Avoid repeating details already visible in component visuals.
+- Use line breaks when the summary contains a list of requirements.
+- Target readability in under a minute.
+
+### 2) Annotated state examples (required, primary)
+
+This is the most important part of the new template. For every accessibility-relevant state or archetype, duplicate `#state-template` and fill its `Example of state with annotations`.
+
+Include a state example when:
+- The state changes what is announced.
+- The state changes exposed role or state.
+- The state changes focus order or whether an element is focusable.
+- The state introduces an error, alert, status, loading message, selected value, expanded content, disabled behavior, or live update.
+- The state clarifies a meaningful optional slot, such as a trailing action.
+
+Common examples to consider:
+- Empty / placeholder
+- Filled / selected value
+- Error / invalid
+- Disabled
+- Focused, only if focus treatment changes the accessibility requirement
+- Loading / progress
+- Selected / checked / expanded / pressed
+- Optional trailing action or close button
+
+Combine examples only when accessibility behavior is identical. Do not combine error and disabled if their announcements or requirements differ.
+
+For each state example:
+- Create a linked instance from the exported main component in Main component showcase.
+- Set real properties and text overrides to show the state.
+- Add annotations using `Output`, `Role`, `State`, and `Requirement`.
+- Keep annotation content short and line-broken.
+- Add generic implementation notes to `#optional-description`.
+
+### 3) Optional description for each state (secondary)
+
+Use `#optional-description` for details that support the annotated example but should not clutter the visual annotation:
+- platform nuance
+- merge behavior
+- keyboard expectations
+- live-region behavior
+- known implementation constraints
+
+Use short paragraphs or line breaks. Never write a dense catch-all paragraph when the content is effectively a list.
+
+### 4) Technical appendix (secondary)
+
+Place the full platform-specific content here:
+- Top-level focus order model (for compound components)
+- VoiceOver / TalkBack / ARIA tables by state
+- Detailed property/value/notes rows
+- Merge semantics and edge-case handling notes
+
+For trivial single-stop components, keep appendix compact but still include enough implementation detail for handoff.
+
+### 5) Figma structure and emphasis
+
+Within the Accessibility template:
+- Place summary content in the first visible block after the title.
+- Place annotated state examples before the Technical appendix.
+- Keep appendix blocks visually secondary and clearly labeled "Technical appendix".
+- Keep appendix in the same frame, but make it obvious it is the deep-dive section.
 
 ---
 
@@ -262,7 +387,7 @@ For each focusable part in each state, document the platform-specific properties
 
 ## Focus Order Section
 
-For compound components (2+ focusable parts), add a **focus order section** as the first section in each state. This provides a platform-agnostic overview of the traversal sequence before diving into platform-specific details.
+For compound components (2+ focusable parts), add a **focus order section** once at the top of the technical appendix. This provides a platform-agnostic overview of the traversal sequence before diving into platform-specific details.
 
 ### When to Use
 
@@ -272,7 +397,7 @@ Add a focus order section when the component has **2+ actual focus stops** (as d
 
 **Omit focus order:** Simple button (1 stop), checkbox with label (1 stop — label merges), toggle switch (1 stop), plain list item without action buttons (1 stop).
 
-> **Single-stop `#header-row` label:** When the focus order section is omitted, the `#focus-order` cell in each platform table's `#header-row` must be labeled **`"Summary"`**, not `"Focus order"`. The label `"Focus order"` only makes sense when there are multiple numbered stops to reference.
+> Single-stop components do not need a focus-order example unless the state itself changes focus behavior. Document their accessibility through annotated state examples instead.
 
 ### How to Structure
 
@@ -343,12 +468,21 @@ Order: Name -> Role -> State. Prefer native HTML over ARIA.
 ```typescript
 interface ScreenReaderData {
   componentName: string;
+  summary: SummaryData;            // Designer-facing primary layer
   compSetNodeId: string;            // Figma node ID of the component set (from extraction)
   rootSize: { w: number; h: number }; // Default variant dimensions (from extraction)
   elements: FocusElement[];         // All direct children with bounding boxes (from extraction)
   guidelines: string;
   focusOrder?: FocusOrderData;    // Top-level, shown once (compound components only)
-  states: StateData[];
+  examples: StateExampleData[];    // One rendered #state-template per relevant state/archetype
+  technicalAppendix?: string;      // Generic details that apply across examples
+}
+
+interface SummaryData {
+  intent: string;                  // 1-2 sentences, plain language
+  focusModel: string;              // Single-stop vs multi-stop traversal summary
+  stateCoverage: string;           // Which states are announced and why
+  openDecisions?: string[];        // Only unresolved product/design decisions
 }
 
 interface FocusElement {
@@ -361,31 +495,29 @@ interface FocusElement {
 interface FocusOrderData {
   title: string;                  // Always "Focus order"
   description?: string;           // Optional description shown under the title (e.g., merge summary)
-  tables: TableData[];            // One table per actual focus stop in traversal order
+  stops: FocusOrderStop[];        // Actual focus stops in traversal order
 }
 
-interface StateData {
-  state: string;                  // State name: "enabled", "disabled", "Tab selected"
-  description?: string;           // Optional description for this state
-  sections: SectionData[];        // Platform sections only: VoiceOver, TalkBack, ARIA
+interface FocusOrderStop {
+  index: number;
+  name: string;
+  description: string;
 }
 
-interface SectionData {
-  title: string;                  // "VoiceOver (iOS)", "TalkBack (Android)", "ARIA (Web)"
-  tables: TableData[];            // One or more tables (one per component part)
+interface StateExampleData {
+  title: string;                  // #state-title: "Empty", "Filled", "Error", "Disabled"
+  componentVariant: Record<string, string>; // Figma properties to set on the linked instance
+  textOverrides?: Record<string, string>;   // Realistic content to apply inside the instance
+  annotations: AnnotationData[];  // Visual callouts in Example of state with annotations
+  optionalDescription?: string;   // Goes in #optional-description
 }
 
-interface TableData {
-  focusOrderIndex: number;        // Reading order position (1, 2, 3…) — shown in #focus-order column
-  name: string;                   // Part/object name (e.g., "Button", "Input field", "Trailing icon button")
-  announcement: string;           // Full announcement string (e.g., "\"Submit, button\"")
-  properties: PropertyItem[];     // Platform-specific properties
-}
-
-interface PropertyItem {
-  property: string;
-  value: string;
-  notes: string;
+interface AnnotationData {
+  target: string;                 // What the annotation points to
+  output?: string;                // Accessible name/value/output
+  role?: string;                  // Semantic role
+  state?: string;                 // Exposed state
+  requirement?: string;           // Requirement not covered by other fields
 }
 ```
 
@@ -394,81 +526,35 @@ interface PropertyItem {
 | Field | Rule |
 |-------|------|
 | `componentName` | Type: "Button", "Tooltip", "Tab bar", "Text field", etc. |
-| `compSetNodeId` | Figma node ID of the component set, from the extraction script. Used for creating instances in Preview placeholders. |
-| `rootSize` | `{ w, h }` of the default variant. Used to center the component instance in Preview placeholders. |
-| `elements` | Array of direct children with bounding boxes from extraction. Each element has `isFocusStop` set during merge analysis — used to build `FOCUS_STOPS` for marker rendering. |
+| `summary` | Required primary layer. Must be concise, plain language, and scannable before any technical table. |
+| `compSetNodeId` | Figma node ID of the exported component set in Main component showcase, from the extraction script. Used for creating linked example roots. |
+| `exampleSourceNodeId` | Figma node ID of the exported component or variant used as the top-level example root. Must not point to a primitive. |
+| `rootSize` | `{ w, h }` of the default variant. Used to center the component instance in example frames. |
+| `elements` | Array of direct children with bounding boxes from extraction. Use this to place annotations on the correct target. |
 | `guidelines` | Bullet points. First bullet should describe focus order for compound components. Cover: edge cases, platform differences, focus behavior. |
-| `focusOrder` | **Top-level, optional.** Only for compound components (2+ focusable/announced parts). Shown once as an overview, not repeated per state. Note: even when `focusOrder` is omitted, every `TableData` still needs `focusOrderIndex`. |
+| `focusOrder` | **Top-level, optional.** Only for compound components (2+ focusable/announced parts). Summarize in the summary or technical appendix; do not force platform tables. |
 | `focusOrder.title` | Always `"Focus order"` |
-| `focusOrder.tables` | One table per step: `focusOrderIndex` is the step number (1, 2), `name` is the element name (e.g., "Input field"), `announcement` is the element description |
-| `state` | Component state: "enabled", "disabled", "error", "Tab selected", "Tooltip visible" |
-| `description` | Optional. Brief description of what's different about this state. |
-| `sections` | Array of platform sections only: VoiceOver (iOS), TalkBack (Android), ARIA (Web). **No focus order inside states.** |
-| `title` | Section title. Use exact names: `"VoiceOver (iOS)"`, `"TalkBack (Android)"`, `"ARIA (Web)"` |
-| `tables` | One or more tables per section. For platforms: one table per component part. |
-| `focusOrderIndex` | Reading order position (1, 2, 3…). Every table must have this — even single-stop components get `1`. |
-| `#focus-order` cell label | The left cell of `#header-row` in each platform table. **Single-stop components:** write `"Summary"` — there is no ordering to convey. **Compound components:** write the stop number (e.g. `"1"`, `"2"`). Never write `"Focus order"` in a single-stop platform table — it implies a sequence that doesn't exist. |
-| `name` | Part/object name ("Button", "Input field", "Trailing icon button"). **Compound components only:** prepended to `announcement` in the `#announcement` cell (e.g. `Button   "Connect with Apple, button"`). **Single-stop components:** omit the name prefix — write only the announcement string. |
-| `announcement` | Full announcement string in quotes (e.g., `"Submit, button"`). |
-| `properties` | All relevant properties. Always include role/traits for platform sections. |
-| `value` | Actual text from image. For icons, use meaning ("Close"). "–" if empty. |
-| `notes` | One sentence: why this property matters. |
+| `focusOrder.stops` | One item per step: `index` is the step number, `name` is the element name, `description` explains the stop |
+| `examples` | Required primary layer. One entry per duplicated `#state-template`. |
+| `examples.title` | State or archetype title: "Empty", "Filled", "Error", "Disabled", "Selected", "Trailing action". |
+| `examples.componentVariant` | Figma properties to set on the linked instance. Use actual available properties. |
+| `examples.textOverrides` | Realistic labels, values, placeholders, error messages, helper text, etc. |
+| `examples.annotations` | One or more contextual callouts using Output / Role / State / Requirement. |
+| `examples.optionalDescription` | Generic implementation details for that state. Keep it line-broken when list-like. |
+| `technicalAppendix` | Optional generic details that apply across examples; belongs in the lower Technical appendix block. |
 
-### Section Order Within Each State
+### Annotation formatting
 
-1. **VoiceOver (iOS)**
-2. **TalkBack (Android)**
-3. **ARIA (Web)**
-
-Focus order is **not** inside states — it is a top-level field rendered once before all states.
-
-### Tables Within Platform Sections
-
-For compound components, each platform section contains **one table per component part**, listed in focus traversal order:
+Every visual callout in `Example of state with annotations` uses only populated fields, one per line:
 
 ```
-VoiceOver (iOS)
-  ├── Table: "Label" — how iOS announces the label
-  ├── Table: "Input" — how iOS announces the input field
-  └── Table: "Hint text" — how iOS announces the hint
+Output: [accessible name/value/output]
+Role: [semantic role]
+State: [programmatic state]
+Requirement: [other behavior or constraint]
 ```
 
-For simple components (one focusable element), each platform section has **one table**:
-
-```
-VoiceOver (iOS)
-  └── Table: "Button" — how iOS announces the button
-```
-
-### Property Table Format
-
-Each property gets its **own row** in the `#state-table`. Do not combine multiple properties into a single row.
-
-**Structure:**
-```
-#state-table
-├── #header-row (Summary column for single-stop, Focus order for compound)
-├── #prop-row-template (Property 1)
-├── #prop-row-template (Property 2)
-└── #prop-row-template (Property 3)
-```
-
-**To add property rows:**
-1. Find the existing `#prop-row-template` in the platform's `#state-table`
-2. Clone it for each additional property
-3. Append clones to `#state-table` (they stack vertically)
-4. Update each row's Property name / Property value / Property notes cells
-
-**Announcement formatting:**
-When a component has multiple behavioral variants (e.g., toggle vs button vs link), use **line breaks** to show each pattern on its own line:
-
-```
-Toggle: "[Label], toggle button, pressed/not pressed"
-Button: "[Label], button"
-Link: "[Label], link"
-```
-
-Do NOT use bullet characters (•) or semicolons to separate patterns inline. Line breaks are clearer.
+Do not write annotation content as dense paragraphs. Split independent requirements into separate annotations or separate lines.
 
 ### Archetype Strategy
 
@@ -483,15 +569,15 @@ For grouped controls (tab bar, radio group), don't document every item. Document
 
 | If you see... | Merge analysis | Focus stops | Result |
 |---------------|---------------|-------------|--------|
-| Simple button | Label merges into button | 1 stop: button | No `focusOrder`; 3 platform sections, 1 table each |
-| Checkbox with label | Label merges into checkbox | 1 stop: checkbox | No `focusOrder`; 3 platform sections, 1 table each |
-| Text field (label + input + hint) | Label → input name, hint → input hint | 1 stop: input (+ trailing icon if interactive = 2 stops) | `focusOrder` only if trailing icon present; per-stop platform tables |
-| Chip with close button | Label merges into chip body | 2 stops: chip, close button | `focusOrder` + per-stop platform tables |
-| Tab bar | — | 2+ stops: tablist container, each tab | `focusOrder` + per-stop platform tables |
-| List item (icon + title + subtitle) | All merge into one stop | 1 stop: list item (+ trailing action if present = 2 stops) | `focusOrder` only if trailing action; per-stop platform tables |
-| Tooltip (trigger + bubble) | Bubble is live region, not a focus stop | 1 stop: trigger | No `focusOrder`; document bubble as live region |
-| Card (title + description + actions) | Title + description merge into card if card is clickable | Card link + each action button | `focusOrder` if 2+ stops; per-stop platform tables |
-| State adds new element (error message) | Error announced as live region or replaces hint | Focus stops unchanged | Note in guidelines; update affected platform tables |
+| Simple button | Label merges into button | 1 stop: button | Annotate default plus disabled/loading/error only when those states exist |
+| Checkbox with label | Label merges into checkbox | 1 stop: checkbox | Annotate unchecked, checked, disabled, error if supported |
+| Text field / select field | Label + value + hint merge into field | 1 stop: field (+ trailing action if interactive = 2 stops) | Annotate empty, filled, error, disabled, and trailing action when present |
+| Chip with close | Label merges into chip body | 2 stops: chip, close button | Annotate chip body and close action separately |
+| Tab bar | — | Tablist + tabs | Annotate selected and unselected tab archetypes, plus disabled if supported |
+| List item | Title + subtitle merge into item | 1 stop: list item (+ trailing action if present = 2 stops) | Annotate list item output and trailing action separately when present |
+| Tooltip | Bubble is descriptive, not a normal focus stop | 1 stop: trigger | Annotate trigger output and requirement for bubble announcement |
+| Card | Heading + description may merge into card | Card link + each action button | Annotate card output and each action archetype |
+| State adds error/status content | Error/status updates announcement | Focus stops may stay same | Add a state example showing how the error/status is exposed |
 
 ---
 
@@ -499,12 +585,12 @@ For grouped controls (tab bar, radio group), don't document every item. Document
 
 | Situation | Action |
 |-----------|--------|
-| Label merges into input | Do NOT list label as a separate focus order entry. Document it as `accessibilityLabel` (iOS), `contentDescription` (Android), or `<label for>` (Web) on the input's platform table |
-| Platform merge behavior differs | Note in guidelines: "iOS uses `accessibilityElement` to merge; Android uses `mergeDescendants`; Web uses `<label for>` / `aria-describedby`" |
-| Element is a live region | Do NOT list in `focusOrder` — live regions are not focus stops. Document `liveRegion` / `aria-live` in platform tables and note in guidelines |
-| Decorative element | Do not include in `focusOrder` or platform tables |
-| Focus order changes by state | Note in guidelines which states change the order; platform tables in those states show new/removed elements |
-| Simple component with no compound parts | Omit `focusOrder` entirely; just use 3 platform sections per state |
+| Label merges into input | Do NOT annotate the label as a separate focus stop. Include it in the field `Output`. |
+| Platform merge behavior differs | Note differences in `#optional-description` or Technical appendix. |
+| Element is a live region | Do NOT list it as a focus stop. Add an annotation or optional description explaining announcement behavior. |
+| Decorative element | Do not annotate unless decorative treatment is ambiguous. |
+| Focus order changes by state | Add a state example showing the changed order. |
+| Simple component with no compound parts | Omit `focusOrder`; use state examples for meaningful state changes. |
 | Merged parent with one breakout child | If a container uses `mergeDescendants` but one child is independently interactive, list only the interactive child as a focus stop — the container is not a stop |
 | Ambiguous merge across platforms | If iOS merges parts but Web keeps them as separate focusable elements, document the superset in `focusOrder` and note platform differences in guidelines |
 
@@ -514,20 +600,19 @@ For grouped controls (tab bar, radio group), don't document every item. Document
 
 - **Placeholders:** Never use `<label>`; use actual text
 - **Curly quotes:** `""` should be `\"`
-- **Combined properties:** Split into separate items
+- **Dense annotations:** Split list-like content into line-broken Output / Role / State / Requirement fields.
 - **Missing states:** Document all states
 - **Vague guidelines:** Give implementation advice, not description
 - **No citations:** Omit `:contentReference`, `oaicite`, etc.
 - **Over-grouping:** Not every visual cluster needs a container
 - **Under-grouping:** Mutual-selection items need container semantics
-- **Missing keys:** Property objects require all three: `property`, `value`, `notes`
-- **Inconsistent role:** If using native element in one state, use it in all states of that component
-- **Focus order inside states:** `focusOrder` is top-level, shown once — never inside `states[].sections`
+- **Missing annotation target:** Every annotation must point to the element or state it describes.
+- **Inconsistent role:** If the role is the same across states, keep the wording consistent in each relevant example.
 - **Listing merged parts as focus stops:** Label, hint text, and other non-interactive parts that merge into an interactive element are NOT focus stops — do not give them their own entry in `focusOrder`
-- **Missing focus order:** Components with 2+ actual focus stops need a top-level `focusOrder`
-- **Wrong section titles:** Use exact titles: `"VoiceOver (iOS)"`, `"TalkBack (Android)"`, `"ARIA (Web)"`
-- **Missing per-stop tables:** Each actual focus stop needs its own table in each platform section — document merged parts as properties within the stop's table
+- **Missing focus order:** Components with 2+ actual focus stops need a focus-order note in summary, optional description, or appendix.
+- **Missing state examples:** Error, disabled, selected, expanded, loading, and filled/empty states need examples when they change accessibility behavior.
 - **Confusing visual parts with focus stops:** Run the merge analysis before listing focus stops. A text field has 3 visual parts but typically 1 focus stop (the input)
+- **Technical-first summary:** Do not start with platform property dumps. The first readable block must be a concise designer summary.
 
 ---
 
@@ -539,113 +624,92 @@ Before rendering in Figma, verify your structured data against these checks:
 |-------|----------------|
 | ☐ **Merge analysis done** | Every visual part classified: focus stop, merged into parent, live region, or decorative |
 | ☐ **Focus stops only** | `focusOrder` entries are only actual focus stops (interactive elements, navigation containers) — no merged parts listed as separate entries |
-| ☐ **Focus order is top-level** | If component has 2+ focus stops, `focusOrder` is a top-level field — NOT inside any state's sections |
+| ☐ **Focus order is explained** | If component has 2+ focus stops, focus order is explained in summary, optional description, or appendix |
 | ☐ **Focus order omitted when 1 stop** | Simple components with 1 focus stop do NOT include `focusOrder` |
-| ☐ **Per-stop tables only** | Platform sections contain one table per actual focus stop. Merged parts appear as properties (label, hint, value) within the stop's table |
-| ☐ **Section order** | VoiceOver (iOS) → TalkBack (Android) → ARIA (Web) (no focus order inside states) |
-| ☐ **Section titles** | Exact: `"VoiceOver (iOS)"`, `"TalkBack (Android)"`, `"ARIA (Web)"` |
-| ☐ **Consistent stops across platforms** | Same focus stops appear in all three platform sections (in same order) |
-| ☐ **Role included** | Every platform table includes role/traits property |
-| ☐ **Merged parts documented** | Parts that merge are documented as properties (accessibilityLabel, contentDescription, aria-label, etc.) on the focus stop they belong to |
-| ☐ **All states documented** | Every relevant state has its own entry in `states` array |
+| ☐ **State examples duplicated** | Every relevant state or archetype has its own duplicated `#state-template` |
+| ☐ **Exported roots used** | Every `Example of state with annotations` has a top-level instance from Main component showcase, not Primitives or Main Primitive wrapper |
+| ☐ **Linked instances used** | Every example root is a linked instance from an exported main component or variant |
+| ☐ **Instance configured** | Properties and text overrides make the example state realistic |
+| ☐ **Annotations contextual** | Output / Role / State / Requirement callouts point to the exact element or state they describe |
+| ☐ **Shared tooltip used** | Every visual annotation uses `Specs-TootlipBody`, not a custom frame or drawn box |
+| ☐ **Routed arrows used** | Every connector is a vector arrow with the arrowhead on the target element end |
+| ☐ **Line breaks used** | List-like annotation and optional-description content uses line breaks, not dense paragraphs |
+| ☐ **Merged parts documented** | Parts that merge are documented in `Output` or optional description on the focus stop they belong to |
+| ☐ **All relevant states documented** | Error, disabled, selected, expanded, loading, filled/empty states are represented when accessibility behavior differs |
 | ☐ **Guidelines describe merging** | For compound components, guidelines explain what merges and what the user actually lands on |
 | ☐ **Straight quotes** | JSON uses ASCII `"` not curly quotes `""` |
 | ☐ **No placeholders** | All values use actual text from the component, not `<label>` |
-| ☐ **Preview placeholder has instance** | Each state's `Preview placeholder` contains a centered component instance |
-| ☐ **Markers match focus stops** | Numbered markers correspond 1:1 to the focus order entries — rendered for every state, even single-stop components |
-| ☐ **Markers positioned correctly** | Marker #1 is left of component, even numbers above, odd numbers below — with connecting lines to their target elements |
-| ☐ **`elements` populated** | `elements` array has entries from extraction with `isFocusStop` set based on merge analysis (when Figma link provided) |
+| ☐ **Technical appendix secondary** | Generic platform details are below the contextual examples |
+| ☐ **`elements` populated** | `elements` array has entries from extraction for annotation placement when Figma link is provided |
 
 ---
 
-## Examples (Internal Reference Only)
+## Examples
 
-These examples show the **data shape** you should build mentally before rendering in Figma. Do NOT output these as JSON to the user. Use them only to understand how to structure the values you pass into `use_figma` calls.
+Use examples to verify the output model is concrete enough. State-rich components should not collapse to one generic example.
 
-### Simple Component (Button)
+### State-rich select/input pattern
 
-No focus order section needed — single focusable element.
+For a component like `InputSelect`, generate multiple `#state-template` blocks:
 
-- **componentName**: "Button"
-- **guidelines**: "Label describes action, not appearance. iOS uses 'dimmed' for disabled; Android: 'disabled'. Web: prefer native `<button>` over `role="button"`."
-- **states**: 1 state ("enabled"), 3 platform sections, 1 table each
+1. **Empty**
+   - Instance: placeholder state.
+   - Annotation:
+     ```
+     Output: [Field purpose]. [Placeholder]
+     Role: Select field
+     Requirement: Placeholder is announced with the field purpose.
+     ```
 
-| State | Platform | focusOrderIndex | Table name | Announcement | Key properties |
-|-------|----------|-----------------|------------|--------------|----------------|
-| enabled | VoiceOver (iOS) | 1 | Button | "Submit, button" | accessibilityLabel: "Submit", accessibilityTraits: .isButton |
-| enabled | TalkBack (Android) | 1 | Button | "Submit, button, double-tap to activate" | contentDescription: "Submit", role: Role.Button |
-| enabled | ARIA (Web) | 1 | Button | "Submit, button" | element: `<button>`, textContent: "Submit" |
+2. **Filled**
+   - Instance: selected value state with realistic selected text.
+   - Annotation:
+     ```
+     Output: [Field purpose]. Current value: [Selected value]
+     Role: Select field
+     ```
 
-In the rendered Figma table, the `#focus-order` column shows "1" and the `#announcement` column shows "Button \"Submit, button\"".
+3. **Error**
+   - Instance: error state with realistic error text.
+   - Annotation:
+     ```
+     Output: [Field purpose]. Current value: [Selected value or placeholder]. [Error message]
+     State: Invalid
+     Requirement: Error text is associated with the field.
+     ```
 
-### Compound Component (Text Field with Trailing Icon)
+4. **Disabled**
+   - Instance: disabled state.
+   - Annotation:
+     ```
+     Role: Select field
+     State: Disabled
+     Requirement: Disabled state is exposed programmatically, not only visually.
+     ```
 
-Merge analysis: Label and hint text merge into the input's announcement. The trailing icon button is independently interactive. Result: 2 actual focus stops → `focusOrder` included.
+5. **Trailing action** (only if the trailing slot is interactive)
+   - Instance: field with visible trailing action.
+   - Annotation on the field:
+     ```
+     Output: [Field purpose]. Current value: [Selected value]
+     Role: Select field
+     ```
+   - Annotation on the trailing action:
+     ```
+     Output: [Action name]
+     Role: Button
+     Requirement: Action is a separate focus stop.
+     ```
 
-- **componentName**: "Text field"
-- **guidelines**: "Label and hint text merge into the input field's announcement — not separate focus stops. Trailing icon button is an independent stop. Error state replaces hint with error message (live region). iOS: `accessibilityElement = true` merges label + hint. Android: `mergeDescendants = true` groups them; trailing icon breaks out with `clickable = true`. Web: `<label for>` and `aria-describedby` associate label/hint; trailing button is a separate `<button>`."
-- **focusOrder**: 2 stops
+Put shared implementation notes in each `#optional-description` or the Technical appendix. Do not put all of this in one paragraph.
 
-| focusOrderIndex | Name | Announcement | Type | Notes |
-|-----------------|------|-------------|------|-------|
-| 1 | Input field | Main interactive element | Focusable | Label merges as accessible name; hint merges as hint/description |
-| 2 | Trailing icon button | Independent interactive action | Focusable | E.g., clear text, toggle password. Breaks out of parent merge |
+### Other patterns
 
-- **states**: "default" and "error", each with 3 platform sections, 2 tables per section (one per focus stop)
+Use one representative example per pattern when states do not change accessibility behavior:
+- single-stop component
+- compound component with merged parts
+- grouped navigation control
 
-**Default state — per-platform tables:**
-
-| Platform | focusOrderIndex | Focus stop | Announcement | Key properties |
-|----------|-----------------|-----------|--------------|----------------|
-| VoiceOver (iOS) | 1 | Input field | "Email address, text field, Enter your email" | accessibilityLabel: "Email address" (from label, merged), accessibilityTraits: .isTextField, accessibilityHint: "Enter your email" (from hint, merged) |
-| VoiceOver (iOS) | 2 | Trailing icon button | "Clear text, button" | accessibilityLabel: "Clear text", accessibilityTraits: .isButton |
-| TalkBack (Android) | 1 | Input field | "Email address, edit box, Enter your email" | contentDescription: "Email address" (merged via mergeDescendants), role: Role.TextField, stateDescription: "Enter your email" (hint, merged) |
-| TalkBack (Android) | 2 | Trailing icon button | "Clear text, button" | contentDescription: "Clear text", role: Role.Button (clickable — breaks out) |
-| ARIA (Web) | 1 | Input field | "Email address, edit text, Enter your email" | element: `<input type="text">`, `<label>`: "Email address" (via for/id), aria-describedby: hint-id |
-| ARIA (Web) | 2 | Trailing icon button | "Clear text, button" | element: `<button>`, aria-label: "Clear text" |
-
-In the rendered Figma table, `#focus-order` shows "1" or "2" and `#announcement` shows e.g., "Input field \"Email address, text field, Enter your email\"".
-
-**Error state — changes from default:**
-
-| Platform | focusOrderIndex | Focus stop | Announcement | Changed properties |
-|----------|-----------------|-----------|--------------|-------------------|
-| VoiceOver (iOS) | 1 | Input field | "Email address, text field, invalid data, Please enter a valid email" | + accessibilityValue: "invalid data", accessibilityHint changed to error message, + UIAccessibilityPostNotification for live region |
-| TalkBack (Android) | 1 | Input field | "Email address, edit box, error, Please enter a valid email" | stateDescription: "Error: Please enter a valid email", + isError: true, + liveRegion: polite |
-| ARIA (Web) | 1 | Input field | "Email address, edit text, invalid, Please enter a valid email" | + aria-invalid: true, + aria-errormessage: error-id |
-| All platforms | 2 | Trailing icon button | (unchanged) | Same as default state |
-
-**Note: Simple text field (no trailing icon).** If the text field has no interactive trailing element, the merge analysis yields 1 focus stop (the input — label and hint merge into it). In that case, omit `focusOrder` entirely. The platform sections would each have a single table for "Input field" with label/hint documented as properties.
-
-### Grouped Control (Tab Bar)
-
-Merge analysis: Each tab is independently interactive (buttons). The tablist is a navigation container. No visual parts merge — all are focus stops. Result: 3+ actual focus stops → `focusOrder` included.
-
-- **componentName**: "Tab bar"
-- **guidelines**: "No parts merge — each tab is an independent interactive element and the tablist is a navigation container. Focus order: Tab list container → Selected tab → Unselected tabs. Only selected tab is in keyboard tab order (roving tabindex). Arrow keys navigate between tabs. Tab list needs an accessible label."
-- **focusOrder**: 3 stops
-
-| focusOrderIndex | Name | Announcement | Type | Notes |
-|-----------------|------|-------------|------|-------|
-| 1 | Tab list container | Navigation container | Container | Groups tabs; announced as context before first tab |
-| 2 | Selected tab | Active tab | Focusable | In keyboard tab order; arrow keys to other tabs |
-| 3 | Unselected tab(s) | Inactive tabs | Focusable (arrow keys) | Reachable via arrow keys, not Tab key |
-
-- **states**: 1 state ("Tab selected"), 3 platform sections, 3 tables each (tab list + selected tab + unselected tab)
-
-**Tab selected state — per-platform tables:**
-
-| Platform | focusOrderIndex | Focus stop | Announcement | Key properties |
-|----------|-----------------|-----------|--------------|----------------|
-| VoiceOver (iOS) | 1 | Tab list | "Main navigation" | accessibilityTraits: .isTabBar, accessibilityLabel: "Main navigation" |
-| VoiceOver (iOS) | 2 | Selected tab | "Home, selected, tab, 1 of 3" | accessibilityLabel: "Home", accessibilityTraits: [.isButton, .isSelected] |
-| VoiceOver (iOS) | 3 | Unselected tab | "Profile, tab, 2 of 3" | accessibilityLabel: "Profile", accessibilityTraits: .isButton |
-| TalkBack (Android) | 1 | Tab list | "Main navigation" | contentDescription: "Main navigation", semantics: isTraversalGroup = true |
-| TalkBack (Android) | 2 | Selected tab | "Home, selected, tab, 1 of 3" | contentDescription: "Home", stateDescription: "Selected", role: Role.Tab |
-| TalkBack (Android) | 3 | Unselected tab | "Profile, tab, 2 of 3" | contentDescription: "Profile", role: Role.Tab |
-| ARIA (Web) | 1 | Tab list | "Main navigation, tablist" | role: tablist, aria-label: "Main navigation" |
-| ARIA (Web) | 2 | Selected tab | "Home, tab, selected, 1 of 3" | role: tab, aria-selected: true, tabindex: 0 |
-| ARIA (Web) | 3 | Unselected tab | "Profile, tab, 2 of 3" | role: tab, aria-selected: false, tabindex: -1 |
-
-
-
+If you need deeper implementation examples, consult:
+- `screenreader.md` for analysis patterns
+- `voiceover.md`, `talkback.md`, and `aria.md` for platform detail

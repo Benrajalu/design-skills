@@ -12,6 +12,22 @@ compatibility: Requires Figma MCP (mcp_figma_* tools)
 
 ---
 
+## Single-file execution contract
+
+This `SKILL-FIGMA.md` is intentionally self-contained for Figma import.
+
+Appendix A mirrors the shared repository reference at `../../../docs/accessibility-annotation-presentation.md`. Keep both aligned when changing tooltip component usage, arrow routing, or placement mechanics.
+
+Use it in two layers:
+1. **Core runtime contract (authoritative)**: everything up to and including `What this skill does NOT annotate`.
+2. **Appendix A implementation details**: `Annotation Drawing Reference` and its subsections.
+
+Execution rule:
+- Use the core runtime contract first.
+- Consult Appendix A only for Stage 7 drawing mechanics or if placement output is wrong.
+
+---
+
 ## Design principle: minimal annotations
 
 The goal is the **fewest annotations that carry real value**. Every tooltip is a decision the designer must act on. Annotation fatigue defeats the purpose.
@@ -26,13 +42,9 @@ Keep chat with the designer brief and decision-focused. Do not narrate internal 
 
 Use one-line progress updates only at stage boundaries or when blocked.
 
-- Verbose: `I am now checking the component documentation to understand whether the accessibility spec covers this concern.`
-- Preferred: `Checking component coverage.`
-
 Ask only necessary questions, and keep each question to one short sentence plus a recommendation.
 
-- Verbose: `I noticed this calendar icon might be meaningful because users may need to understand that it opens a date picker. Should it be announced or treated as decorative?`
-- Preferred: `Calendar icon: decorative? My suggestion: yes.`
+Preferred style example: `Calendar icon: decorative? My suggestion: yes.`
 
 The em dash character is prohibited everywhere in this skill's output, including chat messages, proposed plans, summaries, tooltip titles, and tooltip content. Use periods, commas, colons, parentheses, or hyphens instead.
 
@@ -294,6 +306,12 @@ Then follow the drawing reference below exactly:
 - **Container name**: `🔍 A11y - [Frame name]`
 - **Preserve prior runs**: never delete existing A11y annotation containers automatically. Each run creates a new frame-specific container. Let users delete old containers themselves unless they explicitly ask you to remove one.
 
+Use Appendix A selectively in this order:
+1. `Tooltip component`
+2. `Determining element coordinates`
+3. `Complete drawing loop`
+4. `Known gotchas` (only if the result is incorrect)
+
 ### Side assignment
 
 Sort all annotations by `elementCenterY` (top to bottom). Assign sides by alternating: odd indices (0, 2, 4…) → `right`, even indices (1, 3, 5…) → `left`. Override to `left` unconditionally when the element's horizontal centre is in the left half of the frame (`elementCenterX < frameCenterX`). Fall back to `top` for topmost elements when both columns are full, or `bottom` for bottom-nav elements only. Maximum 5 tooltips per side.
@@ -374,7 +392,7 @@ If the user requests changes:
 
 ---
 
-# Annotation Drawing Reference
+# Appendix A - Annotation Drawing Reference (implementation details)
 
 > **Purpose:** Complete reference for placing annotation tooltips beside a Figma feature frame and connecting them to their target elements with routed arrows.
 >

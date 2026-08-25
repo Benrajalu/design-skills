@@ -41,6 +41,12 @@ This section contains several subsections — apply these rules before filling t
 - **Wireframes**: Remove this subsection entirely when there is only one primitive. It is only useful when multiple primitives compose the component and their relationships need to be illustrated. Ensure the numerical markers are correctly placed in relationship to the elements they describe.
 - **Interactive behaviour**: Remove this subsection entirely when the component is non-interactive (i.e. it has no hover, press, focus, tap, or state-change behaviour). Do not document states that don't exist.
 - **Accessibility**: Fill this in using [references/accessibility.md](references/accessibility.md). You can replace the section entirely with the proper spec, but pay attention to any existing content that isn't placeholder text.
+  - Lead with a concise, designer-first summary that can be scanned quickly.
+  - Duplicate the template's "Example of state with annotations" / `#state-template` blocks for each accessibility-relevant state or archetype.
+  - Populate every state example with a linked instance of the exported main component from the Main component showcase, configured to show that state.
+  - Add contextual annotations using `Output`, `Role`, `State`, and `Requirement`, with line breaks when content is list-like.
+  - Render annotations with the shared `Specs-TootlipBody` tooltip and routed vector arrows from `../../../docs/accessibility-annotation-presentation.md`; do not draw custom annotation boxes or plain line connectors.
+  - Keep generic or platform-level detail in `#optional-description` or the Technical appendix below the examples.
 
 Use the "Interactive demo for this component" sections to insert instances of the component(s) set-up to illustrate your suggestions.
 
@@ -53,6 +59,19 @@ When you need to show a component in a Demo frame or any preview area:
 1. **Find the component or variant** in the Main component showcase (shown as `<symbol>` in metadata, type `COMPONENT` or `COMPONENT_SET` in API)
 2. **Call `.createInstance()`** on it — this creates a proper linked instance (or the equivalent for component sets)
 3. **Load fonts first** if the component contains text
+
+**CRITICAL: Example roots must be exported main components, not primitives**
+
+The top-level instance in any Demo or Accessibility example must come from the exported component shown in **Main component showcase**. Do not use primitives from **Primitives**, **Primitives list**, or **Main Primitive wrapper** as the example root, even if they are linked instances.
+
+Primitives may only appear as nested internals of an exported main component instance. If a needed state is only exposed on a nested primitive, create the exported main component instance first, then override the nested primitive inside it.
+
+Before finishing, verify every example root:
+- `root.type === "INSTANCE"`
+- `root.mainComponent` exists
+- the main component source is in the Main component showcase
+- the main component source is not under Primitives / Main Primitive wrapper
+- the root/source name is not a private primitive name such as `Component/.Part`
 
 **NEVER use `.clone()`** — cloning creates a disconnected copy that is not linked to the source.
 
@@ -205,6 +224,8 @@ Table rows use HORIZONTAL layout — their counter axis is **vertical** (height)
 ## References
 
 - [Accessibility spec](references/accessibility.md) — Screen reader accessibility template insertion, merge analysis, focus order, VoiceOver / TalkBack / ARIA properties
+- [Accessibility annotation guide](../../../docs/accessibility-annotation-guide.md) — Shared concise accessibility language and field taxonomy (Output, Role, State, Requirement)
+- [Accessibility annotation presentation](../../../docs/accessibility-annotation-presentation.md) — Shared Figma tooltip component, arrow routing, and placement rules
 - [Screen reader analysis guide](references/screenreader.md) — Detailed instructions for analysing components and producing platform-specific accessibility data
 - [ARIA reference](references/aria.md) — Roles, states, properties, keyboard patterns for Web
 - [TalkBack reference](references/talkback.md) — Jetpack Compose semantics modifiers for Android

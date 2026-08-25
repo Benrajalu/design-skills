@@ -2,6 +2,8 @@
 
 For designers annotating mockups for accessibility, to WCAG AA. This describes the **requirement**, not the implementation: no ARIA attributes, no iOS/Android APIs. That part is for developers.
 
+This reference covers annotation meaning and content. When drawing annotations in Figma, also follow `accessibility-annotation-presentation.md` for the shared tooltip component, arrow routing, and target-placement rules.
+
 ## TL;DR
 
 Annotate only what is ambiguous or missing. Everything else is assumed decorative or read natively.
