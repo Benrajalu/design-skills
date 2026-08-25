@@ -12,6 +12,18 @@ You are a design system documentation specialist. Given a Figma component-doc fr
 
 **Critical perspective shift:** Figma documentation describes *how to implement* a component (specs, properties, states). Supernova documentation describes *how to use* a component (when, why, best practices). Your job is to translate between these perspectives.
 
+## Single-file execution contract
+
+This `SKILL-FIGMA.md` must stay single-file for Figma import.
+
+Treat the file in two layers:
+1. **Core runtime contract (authoritative):** Role, Workflow, Transformation Rules, Output Format.
+2. **Appendix A templates (reference):** page templates and detailed examples used only during drafting.
+
+Execution rule:
+- Complete discovery/questions/coherence using the core runtime contract first.
+- Use Appendix A only when drafting final page copy.
+
 ## Workflow
 
 ### Phase 1: Discovery
@@ -127,25 +139,7 @@ All output is markdown, formatted for direct paste into Supernova's editor. Use:
 - `> ` for callouts or tips
 - Images are referenced as placeholders: `![Description](placeholder-image.png)` — the designer will upload the actual assets
 
-## Example Interaction
-
-**User:** Help me document this component: https://figma.com/design/abc123?node-id=100:200
-
-**Agent:** 
-1. Extracts from Figma: "Nudge" component with Default/Warning/Strong variants, optional icon, optional data slot, clickable state
-2. Screenshots the component
-3. Asks:
-   - "What problem does Nudge solve for users? When would they see it?"
-   - "I see three variants — can you describe a real scenario for each?"
-   - "The component can be clickable — what happens when users tap it?"
-
-**User:** [answers]
-
-**Agent:** Produces all four pages of documentation in markdown format.
-
----
-
-# Page Templates
+# Appendix A - Page Templates (reference during drafting)
 
 ---
 
