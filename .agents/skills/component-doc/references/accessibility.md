@@ -148,6 +148,9 @@ Annotation placement rules:
 - Point annotations at the exact part of the state example they describe.
 - Every visual annotation must use the shared tooltip component. Do not draw custom magenta boxes or manual text callouts.
 - Every connector must be a routed vector arrow using the shared helper. Do not use plain `LineNode` connectors.
+- Never overlap tooltips. After setting tooltip properties, measure the actual tooltip bounds and place each additional tooltip with a clear gap from previously placed tooltips.
+- Do not stack annotations with fixed y-offsets. Tooltip height changes with content, so fixed steps can create collisions.
+- If two tooltips cannot fit safely in the default example frame, increase the example frame height or move one tooltip to another side before drawing arrows.
 - If one state has multiple important requirements, add multiple annotations rather than one dense block.
 - For single-stop components, annotate the component surface.
 - For compound components, annotate each independent focus stop when the difference matters.

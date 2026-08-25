@@ -38,7 +38,13 @@ Safely ignore.
 
 This section contains several subsections — apply these rules before filling them:
 
-- **Wireframes**: Remove this subsection entirely when there is only one primitive. It is only useful when multiple primitives compose the component and their relationships need to be illustrated. Ensure the numerical markers are correctly placed in relationship to the elements they describe.
+- **Wireframes**: Fill this using [references/wireframes.md](references/wireframes.md). Remove this subsection entirely when there is only one meaningful public part and no optional slots, state-dependent anatomy, or nested primitives worth explaining.
+  - Markers must point only to visible targets in the same example. Do not place markers for hidden layers, inactive variant branches, or absent optional slots.
+  - If hidden or optional anatomy matters, add another visible configuration using an exported main-component instance instead of marking invisible internals.
+  - Wireframe example roots must come from Main component showcase; primitives may only appear as visible nested internals.
+  - Marker rows must start with the actual visible primitive or public child component name, then explain its purpose.
+  - Each marker's non-rounded pointer corner must touch a visible target corner; change the marker corner/direction variant as needed.
+  - Marker numbers and description rows must match 1:1, without overlaps or orphan rows.
 - **Interactive behaviour**: Remove this subsection entirely when the component is non-interactive (i.e. it has no hover, press, focus, tap, or state-change behaviour). Do not document states that don't exist.
 - **Accessibility**: Fill this in using [references/accessibility.md](references/accessibility.md). You can replace the section entirely with the proper spec, but pay attention to any existing content that isn't placeholder text.
   - Lead with a concise, designer-first summary that can be scanned quickly.
@@ -46,6 +52,7 @@ This section contains several subsections — apply these rules before filling t
   - Populate every state example with a linked instance of the exported main component from the Main component showcase, configured to show that state.
   - Add contextual annotations using `Output`, `Role`, `State`, and `Requirement`, with line breaks when content is list-like.
   - Render annotations with the shared `Specs-TootlipBody` tooltip and routed vector arrows from `../../../docs/accessibility-annotation-presentation.md`; do not draw custom annotation boxes or plain line connectors.
+  - Measure tooltip bounds after setting content and reject overlapping placements. If several annotations do not fit, increase the example frame height or move a tooltip before drawing arrows.
   - Keep generic or platform-level detail in `#optional-description` or the Technical appendix below the examples.
 
 Use the "Interactive demo for this component" sections to insert instances of the component(s) set-up to illustrate your suggestions.
@@ -224,6 +231,7 @@ Table rows use HORIZONTAL layout — their counter axis is **vertical** (height)
 ## References
 
 - [Accessibility spec](references/accessibility.md) — Screen reader accessibility template insertion, merge analysis, focus order, VoiceOver / TalkBack / ARIA properties
+- [Wireframes](references/wireframes.md) — Component anatomy examples, visible-target marker rules, and marker placement validation
 - [Accessibility annotation guide](../../../docs/accessibility-annotation-guide.md) — Shared concise accessibility language and field taxonomy (Output, Role, State, Requirement)
 - [Accessibility annotation presentation](../../../docs/accessibility-annotation-presentation.md) — Shared Figma tooltip component, arrow routing, and placement rules
 - [Screen reader analysis guide](references/screenreader.md) — Detailed instructions for analysing components and producing platform-specific accessibility data

@@ -85,8 +85,37 @@ Use this simplified in-frame layout:
 2. Add the linked component instance first.
 3. Add one or more `Specs-TootlipBody` instances.
 4. Place tooltips to the right of the component when space allows.
-5. Draw routed vector arrows from tooltip edge to the target element.
-6. If a tooltip grows after `setProperties()`, read its actual size before drawing the arrow.
+5. After setting tooltip properties, read each tooltip's actual size and place the next tooltip below the previous tooltip with a clear gap.
+6. Draw routed vector arrows from tooltip edge to the target element.
+7. If a tooltip grows after `setProperties()`, read its actual size before drawing the arrow.
+
+When several annotations are needed in the same example, never use a fixed vertical step such as `y + 100`. Tooltip height changes with content. Build a placement list from measured bounds and reject any position that overlaps a previous tooltip, the component instance, or an arrow target.
+
+```javascript
+const TOOLTIP_GAP = 24;
+
+function overlaps(a, b) {
+  return !(
+    a.x + a.width <= b.x ||
+    b.x + b.width <= a.x ||
+    a.y + a.height <= b.y ||
+    b.y + b.height <= a.y
+  );
+}
+
+function placeTooltip(tip, placedTips, x, preferredY) {
+  let y = preferredY;
+  for (const placed of placedTips) {
+    const candidate = { x, y, width: tip.width, height: tip.height };
+    if (overlaps(candidate, placed)) {
+      y = placed.y + placed.height + TOOLTIP_GAP;
+    }
+  }
+  tip.x = x;
+  tip.y = y;
+  placedTips.push({ x: tip.x, y: tip.y, width: tip.width, height: tip.height });
+}
+```
 
 ## Routed arrow helpers
 
@@ -186,6 +215,7 @@ Before finishing a Figma annotation pass:
 - No arrow points at whitespace or at a parent when the content describes a child.
 - No annotation contains platform API syntax.
 - No tooltip overlaps the target component or another tooltip.
+- No tooltip uses fixed-step placement that can collide after content wraps; every tooltip is placed from measured bounds.
 - The example frame has `clipsContent = false` if arrows extend beyond a tooltip body.
 
 ## Known gotchas
