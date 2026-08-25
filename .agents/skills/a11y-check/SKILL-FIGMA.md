@@ -16,8 +16,6 @@ compatibility: Requires Figma MCP (mcp_figma_* tools)
 
 This `SKILL-FIGMA.md` is intentionally self-contained for Figma import.
 
-Appendix A mirrors the shared repository reference at `../../../docs/accessibility-annotation-presentation.md`. Keep both aligned when changing tooltip component usage, arrow routing, or placement mechanics.
-
 Use it in two layers:
 1. **Core runtime contract (authoritative)**: everything up to and including `What this skill does NOT annotate`.
 2. **Appendix A implementation details**: `Annotation Drawing Reference` and its subsections.
