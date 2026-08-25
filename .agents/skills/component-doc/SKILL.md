@@ -118,10 +118,18 @@ This is where the exported components live.
 
 **Component behaviour** 
 
-The default blocks are "Handling text", "Handling various screen sizes", and "Handling partial content". Apply these rules before filling them:
+Fill this using [references/behaviour.md](references/behaviour.md).
 
-- **Handling various screen sizes**: Remove this block entirely when the component has a fixed size that does not change with viewport or container width (e.g. atomic indicators, icons, badges). Only keep it when the component genuinely adapts its layout or dimensions across breakpoints.
-- Remove any other block that does not apply to the component. Add new blocks by duplicating an existing one when there are more behaviours to cover.
+The starter blocks "Handling text", "Handling various screen sizes", and "Handling partial content" are examples, not required output. Before filling them, build a behaviour inventory from the exported main component's actual properties, variants, states, slots, text overrides, and interaction model.
+
+Apply these rules:
+
+- Keep, rename, remove, or add blocks based on the component's highest-signal behaviour scenarios and pitfalls.
+- **Handling text**: keep only when labels, values, placeholders, helper text, or error text can wrap, truncate, overflow, become ambiguous, or need realistic guidance.
+- **Handling various screen sizes**: remove when the component is fixed and does not adapt its layout or composition. Keep or rename it only when the component genuinely changes layout, density, grouping, or child relationship across available space.
+- **Handling partial content**: keep only when optional or missing content materially changes meaning, layout, hierarchy, or interaction.
+- Add scenario blocks when useful, such as state transitions, compound interaction, validation and recovery, optional actions, selection communication, or authoring constraints.
+- Prefer a few component-specific, realistic examples over weak template-shaped examples.
 
 **Demo placement rule — one Demo per example, not one for both:**
 
@@ -136,13 +144,25 @@ Demo frame  ← component showing the good case
 
 Duplicate and reorder Demo frames as needed to achieve this. The component instance in each Demo must match its example: a bad-case Demo should show the component in the incorrect/discouraged state; a good-case Demo should show the correct usage.
 
+Before writing each Good or Bad example, define the Demo configuration: exported component source, public property overrides, text overrides, slot/instance-swap overrides, and any nested primitive override required to show the state. If the Demo cannot be represented with a linked exported main-component instance, change or remove the example.
+
+Every Demo/text pair must pass this validation:
+- The Demo visibly proves the adjacent example text.
+- The Bad Demo shows the discouraged situation, not a generic default.
+- The Good Demo shows the recommended alternative, not the same unchanged instance.
+- The example uses realistic product content rather than placeholder-only defaults.
+
 **When to omit a Bad example:**
 
 Remove the ❌ Bad example (and its preceding Demo) when there is no meaningful negative illustration to show — for example, when a block demonstrates an opt-in feature that simply is or isn't enabled, with no discouraged variant, or when the component's properties prevent the wrong state from being rendered (e.g. a fixed brand label that can't be overridden). In those cases, leave only the Demo + ✅ Good example.
 
 **Demo frame alignment:**
 
-When the ❌ bad case is about an element not filling its container, do not center the element in the Demo frame — left-align it. A centered small element does not communicate the problem. Set `counterAxisAlignItems = "MIN"` on the Demo frame so the visual gap between the element and the frame edge is immediately apparent.
+Do not preserve the starter Demo frame size when it weakens the example. Resize Demo frames or use vertical hug sizing when the scenario needs more room, such as error states, focus states, narrow variants, multi-instance comparisons, or long realistic content.
+
+For normal behaviour examples, turn Demo frames into centered auto-layout frames: keep the section width, center children on both axes, and keep `clipsContent = false`.
+
+Use manual layout only when spatial relationships are the point of the example. When the ❌ bad case is about an element not filling its container, do not center the element in the Demo frame — left-align it. A centered small element does not communicate the problem. Set `counterAxisAlignItems = "MIN"` on the Demo frame so the visual gap between the element and the frame edge is immediately apparent.
 
 **Supernova assets**
 
@@ -231,6 +251,7 @@ Table rows use HORIZONTAL layout — their counter axis is **vertical** (height)
 ## References
 
 - [Accessibility spec](references/accessibility.md) — Screen reader accessibility template insertion, merge analysis, focus order, VoiceOver / TalkBack / ARIA properties
+- [Behaviour](references/behaviour.md) — Scenario selection, realistic Good/Bad examples, Demo configuration, and validation rules
 - [Wireframes](references/wireframes.md) — Component anatomy examples, visible-target marker rules, and marker placement validation
 - [Accessibility annotation guide](../../../docs/accessibility-annotation-guide.md) — Shared concise accessibility language and field taxonomy (Output, Role, State, Requirement)
 - [Accessibility annotation presentation](../../../docs/accessibility-annotation-presentation.md) — Shared Figma tooltip component, arrow routing, and placement rules
