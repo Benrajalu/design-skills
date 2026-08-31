@@ -186,7 +186,7 @@ Before finishing Component behaviour:
 | Bad example validity | Bad examples are possible, meaningful, and visually distinct. |
 | Impossible bad states | Bad examples prevented by the component API are removed. |
 | Realistic content | Text and values use product-realistic examples, not placeholder-only defaults. |
-| One Demo per example | Each Good and each Bad example has its own Demo immediately before it. |
+| One Demo per example | Each Good and each Bad example has its own Demo immediately before it — this is about not sharing one Demo between Bad and Good, not about limiting instance count. A single Demo may hold multiple instances/configs when that better proves its example. |
 | Demo sizing | Demo frames are resized or set to hug content when the starter height is too small. |
 | Demo layout | Normal demos use centered auto layout; manual layout is reserved for spatial storytelling. |
 | Layout clarity | Bad demos about sizing or alignment are not centered in a way that hides the issue. |

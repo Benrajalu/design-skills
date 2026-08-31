@@ -46,7 +46,7 @@ This section contains several subsections — apply these rules before filling t
   - Each marker's non-rounded pointer corner must touch a visible target corner; change the marker corner/direction variant as needed.
   - Marker numbers and description rows must match 1:1, without overlaps or orphan rows.
 - **Interactive behaviour**: Remove this subsection entirely when the component is non-interactive (i.e. it has no hover, press, focus, tap, or state-change behaviour). Do not document states that don't exist.
-- **Accessibility**: Fill this in using [references/accessibility.md](references/accessibility.md). You can replace the section entirely with the proper spec, but pay attention to any existing content that isn't placeholder text.
+- **Accessibility**: This section must always be rebuilt from the imported **Accessibility template** component defined at the top of [references/accessibility.md](references/accessibility.md) (`figma.importComponentByKeyAsync` with the documented component key, then detach and resize before writing any text). Never edit the existing ad hoc section's text or frames in place, even if its structure looks similar to the template — always import, detach, and replace the whole section, migrating over any existing non-placeholder content into the new template's nodes.
   - Lead with a concise, designer-first summary that can be scanned quickly.
   - Duplicate the template's "Example of state with annotations" / `#state-template` blocks for each accessibility-relevant state or archetype.
   - Populate every state example with a linked instance of the exported main component from the Main component showcase, configured to show that state.
@@ -143,6 +143,8 @@ Demo frame  ← component showing the good case
 ```
 
 Duplicate and reorder Demo frames as needed to achieve this. The component instance in each Demo must match its example: a bad-case Demo should show the component in the incorrect/discouraged state; a good-case Demo should show the correct usage.
+
+This rule constrains how Demos are *shared* between examples (never one Demo for both Bad and Good) — it does not limit how many instances/configs appear *inside* a single Demo. If one example is best proven by showing two related configurations together (e.g. the same content collapsed and expanded, side by side), keep both instances in that one Demo rather than splitting or dropping one.
 
 Before writing each Good or Bad example, define the Demo configuration: exported component source, public property overrides, text overrides, slot/instance-swap overrides, and any nested primitive override required to show the state. If the Demo cannot be represented with a linked exported main-component instance, change or remove the example.
 
