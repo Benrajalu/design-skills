@@ -1,7 +1,7 @@
 ---
 name: supernova-doc
 description: Generate copy-paste ready Supernova documentation from a Figma component-doc frame. Produces Overview, Usage, Content, and Accessibility pages through a conversational workflow. Use when a designer provides a Figma URL to a component documentation frame and needs to create or update Supernova design system documentation.
-compatibility: Requires Figma MCP (mcp_figma_* tools)
+compatibility: Requires Figma MCP (mcp_figma_* tools). Optionally uses the Supernova MCP's editor/admin tools (sn_admin_write, etc.) for Phase 4 Option B (write directly into Supernova).
 ---
 
 # Supernova Documentation Agent
@@ -80,13 +80,26 @@ Produce markdown documentation for all four pages in a single response, using th
 
 ### Phase 4: Save Option
 
-After presenting the documentation, ask the user if they want to save it to a local markdown file.
+After presenting the documentation, ask the user how they want to save it. Offer both options
+below when the Supernova MCP's editor/admin tools (`sn_admin_write`, etc.) are available; otherwise
+only offer the local file.
+
+**Option A — Local markdown file**
 
 - **Location**: `supernova-doc/generated/{component-name}-docs.md`
 - **Format**: Single file with all four pages, using the same separator format as Phase 3 output
 - **Naming**: Use kebab-case for component name (e.g., `drawer-docs.md`, `bottom-sheet-docs.md`)
 
 This folder is git-ignored, so generated files won't clutter the repository.
+
+**Option B — Write directly into Supernova**
+
+Duplicate the right `[Template] Component` group into the right place in Supernova's documentation
+tree, then fill each of its tabs with the generated content, removing every template placeholder.
+Follow [Publishing to Supernova](references/publish-to-supernova.md) for the full sequence
+(template selection, placement, duplicate/rename/fill/verify, and how to share the resulting page
+URL for review). Never publish or change approval state beyond a plain draft unless the user
+explicitly asks for it.
 
 ## Transformation Rules
 
@@ -126,6 +139,7 @@ All output is markdown, formatted for direct paste into Supernova's editor. Use:
 - `- ` for bullet lists
 - `> ` for callouts or tips
 - Images are referenced as placeholders: `![Description](placeholder-image.png)` — the designer will upload the actual assets
+- **Component names as inline code**: format the component's own name and any other component name referenced in body text as `` `ComponentName` `` (e.g. `` `Loader` ``, `` `Skeleton` ``), so it stands out from regular nouns/verbs. Exception: don't code-format it in a heading or page title (e.g. `## Loader basics`, not `## `Loader` basics`).
 
 ## References
 
@@ -133,6 +147,7 @@ All output is markdown, formatted for direct paste into Supernova's editor. Use:
 - [Usage template](references/usage-template.md) — Structure for the Usage page
 - [Content template](references/content-template.md) — Structure for the Content page
 - [Accessibility template](references/accessibility-template.md) — Structure for the Accessibility page
+- [Publishing to Supernova](references/publish-to-supernova.md) — Editor-mode workflow for writing directly into Supernova (Phase 4, Option B): template selection, placement, duplicate/rename/fill/verify/share
 
 ## Example Interaction
 
