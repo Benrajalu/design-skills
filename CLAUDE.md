@@ -1,6 +1,6 @@
 # AutoDoc — Agent instructions
 
-AutoDoc automates three design system workflows: completing component documentation in Figma, migrating deprecated component instances, and generating Supernova documentation copy.
+AutoDoc automates four design team workflows: completing component documentation in Figma, migrating deprecated component instances, generating Supernova documentation copy, and analyzing qualitative research artifacts.
 
 ## Architecture
 
@@ -29,6 +29,7 @@ Skills are in `.agents/skills/`. Each skill has its own directory with a `SKILL.
 | `.agents/skills/item-replace/` | Migrate deprecated Item* component instances |
 | `.agents/skills/supernova-doc/` | Generate Supernova documentation copy |
 | `.agents/skills/a11y-check/` | Produce accessibility annotations for a feature screen |
+| `.agents/skills/qual-research-analyzer/` | Analyze qualitative research transcripts and moderator notes |
 
 ## MCP dependency
 
@@ -97,6 +98,14 @@ Replace deprecated items in this frame: https://www.figma.com/design/abc123/...?
 ```
 Generate Supernova documentation for this component: https://www.figma.com/design/abc123/...?node-id=100:200
 ```
+
+For qualitative research analysis, provide the study context, research questions, hypotheses, assets, participant profiles, transcript, and moderator notes:
+
+```
+Analyze this qualitative research study using the qual-research-analyzer skill: [study materials]
+```
+
+The qualitative research workflow is independent of the Figma MCP and pauses for validation after participant setup, quote extraction, and pattern identification.
 
 ## Constraints
 

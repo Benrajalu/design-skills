@@ -133,6 +133,26 @@ Generate Supernova documentation for this component: FRAME_URL_HERE
 
 ---
 
+### Qualitative Research Analysis
+
+Analyzes qualitative research transcripts and moderator observation notes to produce evidence-based findings. It keeps GTM asset feedback separate from interface usability findings, preserves native-language verbatims with translations, anonymizes participant data, and pauses for validation between analysis stages.
+
+**Prompt:**
+
+```text
+Analyze this qualitative research study using the qual-research-analyzer skill. I will provide the research context, research questions, hypotheses, assets, participant profiles, transcript, and moderator notes.
+```
+
+**What to expect:**
+
+- Copilot asks for only the missing study setup inputs before analysis.
+- It presents cleaned participant metadata for validation before extracting evidence.
+- It presents quote extractions for validation before clustering patterns.
+- It presents draft patterns for validation before generating the final report.
+- Findings use qualitative frequency labels, never percentages, and keep direct observation distinct from interpretation.
+
+---
+
 ## Rules
 
 - Use one skill per chat conversation.
@@ -175,4 +195,5 @@ Option B (manual):
 - `.agents/skills/component-doc/` → component documentation skill
 - `.agents/skills/supernova-doc/` → Supernova documentation skill
 - `.agents/skills/a11y-check/` → accessibility annotation skill
+- `.agents/skills/qual-research-analyzer/` → qualitative research analysis skill
 - `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` → operating instructions per platform
