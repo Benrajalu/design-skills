@@ -1,6 +1,6 @@
 # AutoDoc — Agent instructions
 
-AutoDoc automates three design system workflows: completing component documentation in Figma, migrating deprecated component instances, and generating Supernova documentation copy.
+AutoDoc automates four design team workflows: completing component documentation in Figma, migrating deprecated component instances, generating Supernova documentation copy, and analyzing qualitative research artifacts.
 
 ## Architecture
 
@@ -18,10 +18,11 @@ Agents read component context from Figma via MCP tools and write changes back di
 | `ComponentDoc` | Complete component documentation in a Figma frame (sections, accessibility, interactive demos) |
 | `ItemReplace` | Scan a Figma frame for deprecated `DEPRECATED Item*` instances and replace them with their modern equivalents |
 | `SupernovaDoc` | Generate copy-paste ready Supernova documentation (Overview, Usage, Content, Accessibility) from a Figma component-doc frame |
+| `QualResearchAnalyzer` | Analyze qualitative research transcripts and moderator notes into evidence-based findings |
 
 ## MCP dependency
 
-Both actions require the **Figma MCP**. The key tools used are:
+The `ComponentDoc`, `ItemReplace`, and `SupernovaDoc` actions require the **Figma MCP**. The key tools used are:
 
 | Tool | Purpose |
 |------|---------|
@@ -97,6 +98,7 @@ Merge the content from `mcp-config.copilot-cli.json` into `~/.copilot/mcp-config
 | `.agents/skills/supernova-doc/references/accessibility-template.md` | Template for Accessibility page |
 | `.agents/skills/component-doc/references/implementation.md` | Architecture reference (ComponentDoc) |
 | `.agents/skills/item-replace/references/implementation.md` | Architecture reference (ItemReplace) |
+| `.agents/skills/qual-research-analyzer/SKILL.md` | Agent behavior for qualitative research analysis |
 
 ## Running an action
 
@@ -113,6 +115,14 @@ Replace deprecated items in this frame: https://www.figma.com/design/abc123/...?
 ```
 Generate Supernova documentation for this component: https://www.figma.com/design/abc123/...?node-id=100:200
 ```
+
+For qualitative research analysis, provide the study context, research questions, hypotheses, assets, participant profiles, transcript, and moderator notes:
+
+```
+Analyze this qualitative research study using the qual-research-analyzer skill: [study materials]
+```
+
+The qualitative research workflow is independent of the Figma MCP and pauses for validation after participant setup, quote extraction, and pattern identification.
 
 ## Constraints
 
